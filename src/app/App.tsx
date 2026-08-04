@@ -473,9 +473,9 @@ function StoryViewer({ startIdx, stories, onClose, onSeen }: {
 }
 
 // ── Home feed ───────────────────────────────────────────────────────
-function HomeFeed({ posts, onLike, onResident, stories, seen, onStory }: {
+function HomeFeed({ posts, onLike, onResident, stories, seen, onStory, onSearch }: {
   posts: typeof POSTS_INIT; onLike: (id: number) => void; onResident: (r: Resident) => void;
-  stories: typeof STORIES_DATA; seen: Set<number>; onStory: (i: number) => void;
+  stories: typeof STORIES_DATA; seen: Set<number>; onStory: (i: number) => void; onSearch: () => void;
 }) {
   return (
     <div className="absolute inset-0 flex flex-col bg-white">
@@ -488,7 +488,7 @@ function HomeFeed({ posts, onLike, onResident, stories, seen, onStory }: {
         </div>
         <div className="flex items-center gap-3">
           <motion.button whileTap={{ scale: 0.8 }}><Bell size={22} color={P} strokeWidth={1.5}/></motion.button>
-          <motion.button whileTap={{ scale: 0.8 }}><Search size={22} color={P} strokeWidth={1.5}/></motion.button>
+          <motion.button whileTap={{ scale: 0.8 }} onClick={onSearch}><Search size={22} color={P} strokeWidth={1.5}/></motion.button>
         </div>
       </div>
       <div className="flex-1 overflow-y-auto scrollbar-hide pb-20">
@@ -601,6 +601,7 @@ function ResidentProfile({ resident, onBack }: { resident: Resident; onBack: () 
 function SearchResidents({ onResident, onBack }: { onResident: (r: Resident) => void; onBack: () => void }) {
   const [q, setQ] = useState("");
   const filtered = RESIDENTS.filter(r => r.name.toLowerCase().includes(q.toLowerCase()));
+
   return (
     <div className="absolute inset-0 flex flex-col bg-white">
       <StatusBar/>
@@ -611,7 +612,7 @@ function SearchResidents({ onResident, onBack }: { onResident: (r: Resident) => 
       </div>
       <div className="px-4 mb-3 flex-shrink-0">
         <div className="flex items-center bg-gray-50 rounded-2xl px-4 py-2.5 gap-2">
-          <input value={q} onChange={e => setQ(e.target.value)} placeholder="Digite"
+          <input value={q} onChange={e => setQ(e.target.value)} placeholder="Buscar por nome"
             className="flex-1 bg-transparent text-sm outline-none text-gray-700 placeholder-gray-300"/>
           <Search size={16} color="#CCCCCC"/>
         </div>
@@ -628,6 +629,9 @@ function SearchResidents({ onResident, onBack }: { onResident: (r: Resident) => 
             </motion.button>
           ))}
         </div>
+        {filtered.length === 0 && (
+          <div className="mt-6 text-center text-sm text-gray-500">Nenhum morador encontrado. Tente Lydia, Emerson ou Jocelyn.</div>
+        )}
       </div>
     </div>
   );
@@ -1030,7 +1034,8 @@ export default function App() {
     switch (cur) {
       case "home": return (
         <HomeFeed posts={posts} onLike={id => setPosts(p => p.map(x => x.id === id ? { ...x, liked: !x.liked } : x))}
-          onResident={onResident} stories={STORIES_DATA} seen={seen} onStory={i => setStoryViewer({ idx: i })}/>
+          onResident={onResident} stories={STORIES_DATA} seen={seen} onStory={i => setStoryViewer({ idx: i })}
+          onSearch={() => switchTab("search")}/>
       );
       case "profile": return selectedResident ? <ResidentProfile resident={selectedResident} onBack={goBack}/> : null;
       case "search": return <SearchResidents onResident={onResident} onBack={() => switchTab("home")}/>;
